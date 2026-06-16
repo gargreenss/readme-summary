@@ -1,0 +1,100 @@
+package com.example.readmesummary.service;
+
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+@Service
+public class ReadmeService {
+
+    public String getReadmeFromGithub(String githubUrl) {
+        try {
+            String rawUrl = convertToRawReadmeUrl(githubUrl);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(rawUrl))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                return "README.md 파일을 찾을 수 없습니다.";
+            }
+
+        } catch (IOException | InterruptedException e) {
+            return "README.md를 불러오는 중 오류가 발생했습니다.";
+        }
+    }
+
+    private String convertToRawReadmeUrl(String githubUrl) {
+        String url = githubUrl.trim();
+
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+
+        url = url.replace("https://github.com/", "");
+
+        String[] parts = url.split("/");
+
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("올바른 GitHub 주소가 아닙니다.");
+        }
+
+        String username = parts[0];
+        String repo = parts[1];
+
+        return "https://raw.githubusercontent.com/" + username + "/" + repo + "/main/README.md";
+    }
+
+    public String summarize(String readme) {
+        if (readme == null || readme.isBlank()) {
+            return "요약할 README 내용이 없습니다.";
+        }
+
+        if (readme.contains("README.md 파일을 찾을 수 없습니다.")
+                || readme.contains("오류가 발생했습니다.")) {
+            return readme;
+        }
+
+        String cleanText = readme
+                .replace("#", "")
+                .replace("*", "")
+                .replace("`", "")
+                .replace("[", "")
+                .replace("]", "")
+                .trim();
+
+        String[] lines = cleanText.split("\n");
+
+        StringBuilder summary = new StringBuilder();
+        summary.append("이 저장소는 README 내용을 기반으로 자동 요약된 프로젝트입니다.\n\n");
+        summary.append("주요 내용:\n");
+
+        int count = 0;
+
+        for (String line : lines) {
+            line = line.trim();
+
+            if (!line.isBlank()) {
+                summary.append("- ").append(line).append("\n");
+                count++;
+            }
+
+            if (count == 5) {
+                break;
+            }
+        }
+
+        return summary.toString();
+    }
+}

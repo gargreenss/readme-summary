@@ -1,0 +1,32 @@
+package com.example.readmesummary.controller;
+
+import com.example.readmesummary.service.ReadmeService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+public class SummaryController {
+
+    private final ReadmeService readmeService;
+
+    public SummaryController(ReadmeService readmeService) {
+        this.readmeService = readmeService;
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
+
+    @PostMapping("/summary")
+    public String summary(@RequestParam String githubUrl, Model model) {
+        String readme = readmeService.getReadmeFromGithub(githubUrl);
+        String summary = readmeService.summarize(readme);
+
+        model.addAttribute("githubUrl", githubUrl);
+        model.addAttribute("summary", summary);
+
+        return "result";
+    }
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>요약 결과</title>
+</head>
+<body>
+
+<h1>README 요약 결과</h1>
+
+<p>
+    <strong>GitHub 주소:</strong>
+    <span th:text="${githubUrl}"></span>
+</p>
+
+<div style="border:1px solid #ccc; padding:20px; width:600px;">
+    <h2>요약본</h2>
+    <pre th:text="${summary}"></pre>
+</div>
+
+<br>
+
+<a href="/">다시 요약하기</a>
+
+</body>
+</html>
